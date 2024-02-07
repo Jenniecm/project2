@@ -4,57 +4,45 @@ from airflow.providers.apache.spark.operators.spark_submit import SparkSubmitOpe
 from airflow.operators.bash_operator import BashOperator
 
 
-airflow_owner = "NOUMEN_Frech_Warren"  # Nom du propriétaire du projet (Ton nom)
-dag_name = "Competition_dag"  # Nom du DAG (exemple: datalake_dag)
-jar_path = "/home/ubuntu/airflow/scala/target/scala-2.13/scala_2.13-0.1.0.jar"  # Chemin du fichier java généré avec sbt clean package
-
-ingestion_task_name = "match_task"  # Nom de la tache d'ingestion (expemple: ingestion_task)
-
-formatted_task_name = "cleanMatch_task"  # Nom de la tache de formattage (expemple: formatted_task)
-java_class_of_formatted_task = "FormattedData"   # Nom de la classe à exécuter pour le formattage (expemple: main.scala.mnm.MnMcount)
-
-combine_task_name = "usageMatch_task"  # Nom de la tache de combinaison (expemple: combined_task)
-java_class_of_combine_task = "CombineData"  # Nom de la classe à exécuter pour la combinaison (expemple: main.scala.mnm.MnMcount)
-
-
 
 default_args = {
-    "owner": airflow_owner,
+    "owner": "Jenifer",
     "retries": 5,
     "retry_delay": timedelta(minutes=5)
 }
 
 with DAG(
-        dag_id=dag_name,
+        dag_id= "Food_dag",
         description="This is dag to manage the data lake",
         schedule_interval="@weekly",
         start_date=datetime(2024, 0o2, 0o7),
         default_args=default_args
 ) as dag:
     pass
-    extraction_task = BashOperator(
-        task_id='executer_mon_script',
-        bash_command='/home/ubuntu/airflow/extraction.sh"{{ ds }}" '
+    ingest_task = BashOperator(
+        task_id='sh_script_execution',
+        bash_command= "/home/ubuntu/airflow/file.sh {{ ds }}",
     )
 
-    formatted_task = SparkSubmitOperator(
-        task_id=formatted_task_name,  # formatted
+    processed_task = SparkSubmitOperator(
+        task_id='formatted_task_name',  # formatted
         conn_id='spark_default',
-        application=jar_path,
-        java_class=java_class_of_formatted_task,
+        application='/home/ubuntu/Downloads/mnmcount/scala/target/scala-2.12/main-scala-mnm_2.12-1.0.jar',
+        java_class='main.scala.mnm.Jobformated',
         conf={
             'spark.airflow.execution_date': '{{ ds }}'
         },
     )
 
-    combined_task = SparkSubmitOperator(
-        task_id=combine_task_name,  # combined
+    '''combined_task = SparkSubmitOperator(
+        task_id='usage_task',  # combined
         conn_id='spark_default',
-        application=jar_path,
-        java_class=java_class_of_combine_task,
+        application='jar_path',
+        java_class='main.scala.mnm...',
         conf={
             'spark.airflow.execution_date': '{{ ds }}'
         },
-    )
+    )'''
 
-    extraction_task >> formatted_task >> combined_task
+    ingest_task >> processed_task
+    # combined_task
