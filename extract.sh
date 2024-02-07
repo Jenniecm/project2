@@ -39,7 +39,7 @@ rm "$filename"
 decompressed_file="/home/ubuntu/Documents/food_data.csv"
 
 # Copier le fichier décompressé dans HDFS
-hdfs dfs -put -f "$decompressed_file" "/user/project/raw/$current_date-$current_time/"
+hdfs dfs -put -f "$decompressed_file" "/user/project/raw/"
 if [ $? -eq 0 ]; then
     echo "Données copiées dans HDFS."
 else
